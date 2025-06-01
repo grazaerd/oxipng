@@ -55,13 +55,15 @@ jobs:
 
     env:
       CARGO_BUILD_TARGET: ${{ matrix.target }}
-      # Use aggressive release-time optimizations + strip symbols + no location detail.
-      # For x86_64-unknown-linux-gnu: add -C target-cpu=znver2.
-      # For aarch64-unknown-linux-musl: preserve -Clink-args=-lgcc but still optimize.
-      RUSTFLAGS: ${{ 
-        matrix.target == 'x86_64-unknown-linux-gnu' && '-C target-cpu=znver2 -C opt-level=3 -C codegen-units=1 -C lto=thin -C link-arg=-s -Zlocation-detail=none' ||
-        matrix.target == 'aarch64-unknown-linux-musl' && '-C opt-level=3 -C codegen-units=1 -C lto=thin -C link-arg=-s -Zlocation-detail=none -Clink-args=-lgcc' ||
-        '-C opt-level=3 -C codegen-units=1 -C lto=thin -C link-arg=-s -Zlocation-detail=none' }}
+      RUSTFLAGS: >-
+        -C opt-level=3
+        -C codegen-units=1
+        -C lto=thin
+        -C link-arg=-s
+        -Zlocation-detail=none
+        ${{ matrix.target == 'x86_64-pc-windows-msvc' && '-C target-cpu=znver2' || '' }}
+        ${{ matrix.target == 'aarch64-unknown-linux-musl' && '-Clink-args=-lgcc' || '' }}
+
 
     steps:
       - name: Checkout source
